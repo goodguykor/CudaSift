@@ -54,24 +54,37 @@ include_directories(
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
 
-cuda_add_executable(cudasift ${cuda_sources} ${sources} OPTIONS -arch=sm_35)
+cuda_add_library(cudasift STATIC ${cuda_sources} ${sources} OPTIONS -arch=sm_35 -Xcompiler -fPIC)
+
+target_compile_options(cudasift PRIVATE -fPIC)
 
 set_target_properties(cudasift PROPERTIES
   COMPILE_FLAGS "${EXTRA_CXX_FLAGS}"			   
 )
 
+target_include_directories(cudasift PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:"include/CudaSift">
+)
+
 target_link_libraries(cudasift
   /usr/local/cuda/lib64/libcudadevrt.a ${OpenCV_LIBS} 
 )
- 
+
+install(TARGETS cudasift EXPORT CudaSift
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
 install(FILES 
   ${cuda_sources} 
   ${sources}
   cudaSiftD.cu
-  CMakeLists.txt
-  Copyright.txt
-  DESTINATION .
+  LICENSE
+  DESTINATION include/CudaSift
 )
 install(FILES data/left.pgm data/righ.pgm
   DESTINATION data
 )
+
+install(EXPORT CudaSift DESTINATION share/CudaSift/cmake)
