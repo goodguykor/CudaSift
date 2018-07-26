@@ -62,29 +62,24 @@ set_target_properties(cudasift PROPERTIES
   COMPILE_FLAGS "${EXTRA_CXX_FLAGS}"			   
 )
 
-target_include_directories(cudasift PUBLIC
+target_include_directories(cudasift INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:"include/CudaSift">
 )
 
 target_link_libraries(cudasift
   /usr/local/cuda/lib64/libcudadevrt.a ${OpenCV_LIBS} 
 )
 
-install(TARGETS cudasift EXPORT CudaSift
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
 
 install(FILES 
   ${cuda_sources} 
   ${sources}
   cudaSiftD.cu
-  LICENSE
-  DESTINATION include/CudaSift
-)
-install(FILES data/left.pgm data/righ.pgm
-  DESTINATION data
+  DESTINATION include
 )
 
+install(TARGETS cudasift EXPORT CudaSift
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
 install(EXPORT CudaSift DESTINATION share/CudaSift/cmake)
