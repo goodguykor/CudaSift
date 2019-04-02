@@ -365,12 +365,12 @@ double FindHomography(SiftData &data, float *homography, int *numMatches, int nu
     safeCall(cudaMemcpy2D(&d_coord[2*numPtsUp], szFl, &d_sift[0].match_xpos, szPt, szFl, numPts, cudaMemcpyDeviceToDevice));
     safeCall(cudaMemcpy2D(&d_coord[3*numPtsUp], szFl, &d_sift[0].match_ypos, szPt, szFl, numPts, cudaMemcpyDeviceToDevice));
     ComputeHomographies<<<numLoops/16, 16>>>(d_coord, d_randPts, d_homo, numPtsUp);
-    safeCall(cudaThreadSynchronize());
+    safeCall(cudaDeviceSynchronize());
     checkMsg("ComputeHomographies() execution failed\n");
     dim3 blocks(1, numLoops/TESTHOMO_LOOPS);
     dim3 threads(TESTHOMO_TESTS, TESTHOMO_LOOPS);
     TestHomographies<<<blocks, threads>>>(d_coord, d_homo, d_randPts, numPtsUp, thresh*thresh);
-    safeCall(cudaThreadSynchronize());
+    safeCall(cudaDeviceSynchronize());
     checkMsg("TestHomographies() execution failed\n");
     safeCall(cudaMemcpy(h_randPts, d_randPts, sizeof(int)*numLoops, cudaMemcpyDeviceToHost));
     int maxIndex = -1, maxCount = -1;
@@ -424,11 +424,11 @@ double MatchSiftData(SiftData &data1, SiftData &data2)
   dim3 threads(16, 16); // each block: 1 points x 16 points
   MatchSiftPoints2<<<blocks, threads>>>(sift1, sift2, d_corrData, numPts1, numPts2);
 #endif
-  safeCall(cudaThreadSynchronize());
+  safeCall(cudaDeviceSynchronize());
   dim3 blocksMax(iDivUp(numPts1, 16));
   dim3 threadsMax(16, 16);
   FindMaxCorr<<<blocksMax, threadsMax>>>(d_corrData, sift1, sift2, numPts1, corrWidth, sizeof(SiftPoint));
-  safeCall(cudaThreadSynchronize());
+  safeCall(cudaDeviceSynchronize());
   checkMsg("MatchSiftPoints() execution failed\n");
   safeCall(cudaFree(d_corrData));
   if (data1.h_data!=NULL) {
