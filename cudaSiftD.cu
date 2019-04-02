@@ -203,7 +203,7 @@ __global__ void ExtractSiftDescriptors(cudaTextureObject_t texObj, SiftPoint *d_
   // Normalize twice and suppress peaks first time
   float sum = buffer[idx]*buffer[idx];
   for (int i=1;i<=16;i*=2)
-    sum += __shfl_xor(sum, i);
+    sum += __shfl_xor_sync(0xFFFFFFFF, sum, i);
   if ((idx&31)==0)
     sums[idx/32] = sum;
   __syncthreads();
@@ -212,7 +212,7 @@ __global__ void ExtractSiftDescriptors(cudaTextureObject_t texObj, SiftPoint *d_
   
   sum = tsum1*tsum1; 
   for (int i=1;i<=16;i*=2)
-    sum += __shfl_xor(sum, i);
+    sum += __shfl_xor_sync(0xFFFFFFFF, sum, i);
   if ((idx&31)==0)
     sums[idx/32] = sum;
   __syncthreads();
